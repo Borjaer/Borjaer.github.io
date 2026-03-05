@@ -1,0 +1,340 @@
+---
+layout: default
+title: Portfolio — Tu Nombre
+---
+
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title>Portfolio Profesional | Tu Nombre</title>
+  <meta name="description" content="Portfolio de desarrollo, proyectos y repositorios de GitHub." />
+
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+
+<body>
+
+<div class="container">
+
+<header class="topbar">
+
+<div>
+<h1 class="title">Tu Nombre</h1>
+<div class="subtitle">
+Desarrollador en formación · 1º DAM · Interesado en backend y desarrollo web
+</div>
+</div>
+
+<nav style="display:flex;gap:10px">
+<a class="btn" href="https://www.linkedin.com" target="_blank">LinkedIn</a>
+<a class="btn" href="https://github.com/TUUSUARIO" target="_blank">GitHub</a>
+<a class="btn" href="mailto:tuemail@ejemplo.com">Contacto</a>
+</nav>
+
+</header>
+
+<section class="section">
+
+<h2>Perfil profesional</h2>
+
+<div class="grid2">
+
+<div class="profile">
+
+<img src="assets/img/perfil.jpg" alt="Foto profesional">
+
+<div class="bio">
+
+<p class="muted" style="margin:0">
+Soy estudiante de Desarrollo de Aplicaciones Multiplataforma con interés en la
+programación backend, bases de datos y desarrollo web.  
+Actualmente estoy construyendo proyectos académicos para fortalecer mis
+habilidades técnicas y mejorar mi capacidad para desarrollar aplicaciones
+estructuradas y mantenibles.
+</p>
+
+<div class="pillrow">
+<span class="pill">Java</span>
+<span class="pill">SQL</span>
+<span class="pill">Git</span>
+<span class="pill">HTML</span>
+<span class="pill">CSS</span>
+</div>
+
+</div>
+
+</div>
+
+<div>
+
+<h3 style="margin:0 0 10px">Formación y proyectos</h3>
+
+<ul class="muted" style="margin:0;padding-left:18px">
+<li>Aplicación de gestión de notas con base de datos</li>
+<li>Sistema de gestión de tareas en Java utilizando POO</li>
+<li>Proyectos web básicos con HTML, CSS y Git</li>
+</ul>
+
+<h3 style="margin:16px 0 10px">Objetivo profesional</h3>
+
+<p class="muted" style="margin:0">
+Seguir desarrollando experiencia práctica en desarrollo de software y
+participar en proyectos donde pueda aplicar Java, bases de datos y
+herramientas de control de versiones.
+</p>
+
+</div>
+
+</div>
+
+</section>
+
+
+<section class="section">
+
+<h2>Proyectos destacados</h2>
+
+<p class="muted">
+Estos repositorios están marcados en GitHub con el topic <b>showcase</b>.
+Representan proyectos relevantes de aprendizaje.
+</p>
+
+<div id="featured" class="cards"></div>
+
+</section>
+
+
+<section class="section">
+
+<h2>Repositorio de código</h2>
+
+<div class="toolbar">
+
+<input id="q" class="input" placeholder="Buscar proyecto..." />
+
+<select id="sort" class="select">
+<option value="updated">Actividad reciente</option>
+<option value="stars">Más valorados</option>
+<option value="name">Orden alfabético</option>
+</select>
+
+<button class="btn active" data-topic="all">Todos</button>
+<button class="btn" data-topic="showcase">Destacados</button>
+<button class="btn" data-topic="web">Web</button>
+<button class="btn" data-topic="backend">Backend</button>
+
+</div>
+
+<div style="height:12px"></div>
+
+<div id="repos" class="cards"></div>
+
+</section>
+
+<footer style="margin-top:40px;text-align:center" class="muted">
+
+<p>
+© 2026 · Portfolio de desarrollo · Construido con GitHub Pages
+</p>
+
+</footer>
+
+</div>
+
+
+<script>
+
+const GITHUB_USERNAME = "TUUSUARIO";
+const FEATURED_TOPIC = "showcase";
+
+let allRepos = [];
+let activeTopic = "all";
+
+function formatDate(iso){
+const d = new Date(iso);
+return d.toLocaleDateString("es-ES",{year:"numeric",month:"short",day:"2-digit"});
+}
+
+function cardBorderByIndex(i){
+return ["border-blue","border-violet","border-emerald"][i % 3];
+}
+
+async function fetchRepos(){
+
+const url = `https://api.github.com/users/${GITHUB_USERNAME}/repos?per_page=100&sort=updated`;
+
+const res = await fetch(url,{headers:{"Accept":"application/vnd.github+json"}});
+
+if(!res.ok) throw new Error("Error al conectar con la API de GitHub");
+
+const repos = await res.json();
+
+return repos.map(r => ({
+
+name:r.name,
+html_url:r.html_url,
+description:r.description || "",
+language:r.language || "—",
+stargazers_count:r.stargazers_count || 0,
+updated_at:r.updated_at,
+topics:r.topics || []
+
+}));
+
+}
+
+function renderFeatured(repos){
+
+const featured = repos.filter(r => r.topics.includes(FEATURED_TOPIC)).slice(0,6);
+
+const el = document.getElementById("featured");
+
+el.innerHTML = featured.length
+? ""
+: `<div class="muted">No hay proyectos destacados todavía.</div>`;
+
+featured.forEach((r,i)=>{
+
+const topics = r.topics.slice(0,4).map(t=>`<span class="pill">${t}</span>`).join("");
+
+el.insertAdjacentHTML("beforeend",`
+
+<article class="card ${cardBorderByIndex(i)}">
+
+<h3>${r.name}</h3>
+
+<div class="muted">${r.description || "Repositorio sin descripción."}</div>
+
+<div class="pillrow">
+<span class="pill featured">Destacado</span>
+${topics}
+</div>
+
+<div class="repoMeta">
+<span>⭐ ${r.stargazers_count}</span>
+<span>🧩 ${r.language}</span>
+<span>🕒 ${formatDate(r.updated_at)}</span>
+</div>
+
+<a class="btn" href="${r.html_url}" target="_blank">Ver repositorio</a>
+
+</article>
+
+`);
+
+});
+
+}
+
+function applyFilters(repos){
+
+const q = (document.getElementById("q").value || "").toLowerCase();
+const sort = document.getElementById("sort").value;
+
+let out = repos.filter(r=>{
+
+const matchesText =
+r.name.toLowerCase().includes(q) ||
+(r.description||"").toLowerCase().includes(q);
+
+const matchesTopic =
+activeTopic === "all" ? true : r.topics.includes(activeTopic);
+
+return matchesText && matchesTopic;
+
+});
+
+if(sort==="updated") out.sort((a,b)=>new Date(b.updated_at)-new Date(a.updated_at));
+if(sort==="stars") out.sort((a,b)=>b.stargazers_count-a.stargazers_count);
+if(sort==="name") out.sort((a,b)=>a.name.localeCompare(b.name));
+
+return out;
+
+}
+
+function renderRepos(repos){
+
+const el = document.getElementById("repos");
+const list = applyFilters(repos);
+
+el.innerHTML = list.length
+? ""
+: `<div class="muted">No hay repositorios que coincidan con la búsqueda.</div>`;
+
+list.forEach((r,i)=>{
+
+const topics = (r.topics && r.topics.length)
+? r.topics.slice(0,6).map(t=>`<span class="pill">${t}</span>`).join("")
+: `<span class="pill">sin etiquetas</span>`;
+
+el.insertAdjacentHTML("beforeend",`
+
+<article class="card ${cardBorderByIndex(i)}">
+
+<h3>${r.name}</h3>
+
+<div class="muted">${r.description || "Repositorio sin descripción"}</div>
+
+<div class="pillrow">${topics}</div>
+
+<div class="repoMeta">
+<span>⭐ ${r.stargazers_count}</span>
+<span>🧩 ${r.language}</span>
+<span>🕒 ${formatDate(r.updated_at)}</span>
+</div>
+
+<a class="btn" href="${r.html_url}" target="_blank">Abrir proyecto</a>
+
+</article>
+
+`);
+
+});
+
+}
+
+function bindUI(){
+
+document.getElementById("q").addEventListener("input",()=>renderRepos(allRepos));
+
+document.getElementById("sort").addEventListener("change",()=>renderRepos(allRepos));
+
+document.querySelectorAll(".btn[data-topic]").forEach(btn=>{
+
+btn.addEventListener("click",()=>{
+
+document.querySelectorAll(".btn[data-topic]").forEach(b=>b.classList.remove("active"));
+
+btn.classList.add("active");
+
+activeTopic = btn.dataset.topic;
+
+renderRepos(allRepos);
+
+});
+
+});
+
+}
+
+async function main(){
+
+bindUI();
+
+allRepos = await fetchRepos();
+
+renderFeatured(allRepos);
+
+renderRepos(allRepos);
+
+}
+
+main();
+
+</script>
+
+</body>
+</html>
